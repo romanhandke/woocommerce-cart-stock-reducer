@@ -26,14 +26,16 @@ class WC_Cart_Stock_Reducer extends WC_Integration {
 		$this->init_settings();
 
 		// Define user set variables.
-		$this->cart_stock_reducer  = $this->get_option( 'cart_stock_reducer' );
-		$this->stock_pending       = $this->get_option( 'stock_pending' );
+		$this->cart_stock_reducer   = $this->get_option( 'cart_stock_reducer' );
+		$this->stock_pending        = $this->get_option( 'stock_pending' );
 		$this->stock_pending_expire_time = $this->get_option( 'stock_pending_expire_time' );
 		$this->stock_pending_include_cart_items = $this->get_option( 'stock_pending_include_cart_items' );
-		$this->expire_items        = $this->get_option( 'expire_items' );
-		$this->expire_countdown    = $this->get_option( 'expire_countdown' );
-		$this->expire_time         = $this->get_option( 'expire_time' );
-		$this->ignore_status       = $this->get_option( 'ignore_status', array() );
+		$this->expire_items         = $this->get_option( 'expire_items' );
+		$this->expire_countdown     = $this->get_option( 'expire_countdown' );
+		$this->expire_time          = $this->get_option( 'expire_time' );
+		$this->ignore_status        = $this->get_option( 'ignore_status', array() );
+    $this->expire_display_check = $this->get_option( 'expire_display_hook_check' );
+    $this->expire_display_hook  = $this->get_option( 'expire_display_hook_slug' );
 
 		// Actions/Filters to setup WC_Integration elements
 		add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -76,10 +78,16 @@ class WC_Cart_Stock_Reducer extends WC_Integration {
 			} else {
 				add_filter( 'wc_add_to_cart_message_html', array( $this, 'add_to_cart_message' ), 10, 2 );
 			}
-			// Some Third-Party themes do not call 'woocommerce_before_main_content' action so let's call it on other likely actions
-			add_action( 'woocommerce_before_single_product', array( $this, 'check_cart_items' ), 9 );
-			add_action( 'woocommerce_check_cart_items', array( $this, 'check_cart_items' ), 9 );
-			add_action( 'woocommerce_before_shop_loop', array( $this, 'check_cart_items' ), 9 );
+
+      // Check wether or not a hook to display the expiration countdown has been set
+      if ('yes' === $this->expire_display_check && '' !== $this->expire_display_hook) {
+        add_action( $this->expire_display_hook, [ $this, 'check_cart_items' ] );
+      } else {
+        // Some Third-Party themes do not call 'woocommerce_before_main_content' action so let's call it on other likely actions
+        add_action( 'woocommerce_before_single_product', array( $this, 'check_cart_items' ), 9 );
+        add_action( 'woocommerce_check_cart_items', array( $this, 'check_cart_items' ), 9 );
+        add_action( 'woocommerce_before_shop_loop', array( $this, 'check_cart_items' ), 9 );
+      }
 
 		}
 
@@ -1224,6 +1232,19 @@ class WC_Cart_Stock_Reducer extends WC_Integration {
 											  'never' => __( 'Never', 'woocommerce-cart-stock-reducer' ) ),
 				'description'       => __( 'When to display a countdown to expiration', 'woocommerce-cart-stock-reducer' ),
 			),
+			'expire_display_hook_check' => array(
+				'title'             => __( 'Select Display Hook', 'woocommerce-cart-stock-reducer' ),
+				'type'              => 'checkbox',
+				'label'             => __( 'Select the hook where the expiration countdown should be inserted', 'woocommerce-cart-stock-reducer' ),
+				'default'           => 'no',
+				'description'       => __( "If checked, you will have to provide the hook, where you want the expiration countdown to be shown", 'woocommerce-cart-stock-reducer' ),
+			),
+			'expire_display_hook_slug' => array(
+				'title'             => __( 'Provide Expiration Display Hook', 'woocommerce-cart-stock-reducer' ),
+				'type'              => 'text',
+				'description'       => __( 'Enter the hook at which you want the expiration countdown to be shown', 'woocommerce-cart-stock-reducer' ),
+				'desc_tip'          => false,
+			),
 			'ignore_status' => array(
 				'title'             => __( 'Ignore Order Status', 'woocommerce-cart-stock-reducer' ),
 				'type'              => 'multiselect',
@@ -1234,5 +1255,5 @@ class WC_Cart_Stock_Reducer extends WC_Integration {
 		);
 	}
 
-
 }
+

@@ -33,6 +33,10 @@ this problem and someone posted on Facebook about it, which caught my attention.
 
 Please submit bug reports, feature requests, and pull requests via the [GitHub repository](https://github.com/jamesgol/woocommerce-cart-stock-reducer)
 
+## Additions in this fork
+
+Added two new settings to allow admins to set the hook at which the expiration countdown should be shown.
+
 ## Installation ##
 
 1. Download plugin from [GitHub](https://github.com/jamesgol/woocommerce-cart-stock-reducer) or the [wordpress.org repository](https://wordpress.org/plugins/woocommerce-cart-stock-reducer/)
